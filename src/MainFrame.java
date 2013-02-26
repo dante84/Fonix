@@ -30,12 +30,14 @@ public class MainFrame extends JPanel{
        private JTable tPrevisualizacion = new JTable(new DefaultTableModel());              
        private JScrollPane spt;       
        private DefaultTableModel modelo = (DefaultTableModel)tPrevisualizacion.getModel();              
-       private static Map<Integer,Object> mapaFechas;
+       private static Map<Integer,ArrayList<Object>> mapaFechas;
        private static Map<Integer,String> mapaNombres; 
        private static Map<String,ArrayList<Object>> mapaCombinado;
        
        public MainFrame(){
              
+              System.out.println("En el constructor");
+              
               eFechaInicial = new JLabel("Fecha inicial: ");
               eFechaFinal = new JLabel("Fecha final: ");
               
@@ -50,12 +52,17 @@ public class MainFrame extends JPanel{
                                            
                                   MainFrame.this.setDatosBase();
                                   
-                                  Set keysNombres = mapaNombres.keySet();
+                                  //Set keysNombres = mapaNombres.keySet();
                                   Set keysFechas  = mapaFechas.keySet();
                                   
                                   for( Object id : keysFechas ){
                                         
-                                       System.out.println(id + " -  " + mapaNombres.get(id));
+                                       //System.out.println(id + " -  " + mapaNombres.get(id));
+                                       ArrayList<Object> fechas = mapaFechas.get(id);
+                                       
+                                       for( Object fecha : fechas ){
+                                            System.out.println( id + " " + mapaNombres.get(id) + " " + fecha ); 
+                                       }
                                       
                                   }
                                   
@@ -84,6 +91,8 @@ public class MainFrame extends JPanel{
        
        public void setDatosBase(){ 
                            
+              System.out.println("En setDatosBase");
+              
               Connection c;
               Statement s;
               ResultSet rs;
@@ -107,6 +116,8 @@ public class MainFrame extends JPanel{
                   ArrayList<Integer> ids = new ArrayList<>();
                   mapaNombres = new HashMap<>();
                   
+                  System.out.println("En el try antes del while");
+                  
                   int j = 1;
                   while( rs.next() ){
                          String nombre = rs.getString(2);
@@ -116,21 +127,31 @@ public class MainFrame extends JPanel{
                          ids.add(new Integer(id));
                          j++;
                   }                   
-                                                       
+                                      
+                   
+                  String fInicial = cFechaInicial.getText().trim();
+                  String fFinal = cFechaFinal.getText().trim();
+                  
+                  System.out.println(fInicial + " " + fFinal);
+                  
                   int i = 1;
                   for(Integer id : ids){
                        
-                      select = "select checktime,userid from checkinout where userid = " + id;
+                      select = "select checktime,userid from checkinout where userid = '" + id + "' and checktime >= " + fInicial + " and checktime <= " + fFinal + "";
+                      System.out.println(select);
                       rs = s.executeQuery(select);                       
-                               
-                      while(rs.next()){
+                      ArrayList<Object> fechas = new ArrayList<>();
+                      
+                      while( rs.next() ){
                        
-                            Object datos = rs.getObject(1);                                                          
-                            //System.out.println(i + " -  " + datos);
-                            mapaFechas.put(id,datos);
-                            i++;
+                             Object dato = rs.getObject(1);                                                          
+                             //System.out.println(i + " -  " + dato);
+                             fechas.add(dato);
+                             i++;
                              
                       }
+                      
+                      mapaFechas.put(id,fechas);
                        
                       rs.close();                                              
                        
@@ -139,7 +160,7 @@ public class MainFrame extends JPanel{
                   s.close();
                   c.close();
                    
-              }catch(ClassNotFoundException | SQLException e){}
+              }catch(ClassNotFoundException | SQLException e){ e.printStackTrace(); }
                                                                              
                           
        }    
