@@ -1,7 +1,6 @@
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -24,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import org.joda.time.DateTime;
 
@@ -64,78 +64,133 @@ public class MainFrame extends JPanel{
 
                            @Override
                            public void actionPerformed(ActionEvent e) {
-                                           
-                                  MainFrame.this.setDatosBase();
+                               
+                                  SwingWorker worker;
+                                  worker = new SwingWorker() {
+
+                                  @Override
+                                  protected Void doInBackground() throws Exception {
+                                          
+                                            MainFrame.this.setDatosBase();
                                                                     
-                                  Set keysFechas  = mapaFechas.keySet();
+                                            Set keysFechas  = mapaFechas.keySet();
                                   
-                                  String cfi = MainFrame.this.cFechaInicial.getText().trim();
-                                  String cff = MainFrame.this.cFechaFinal.getText().trim();
+                                            String cfi = MainFrame.this.cFechaInicial.getText().trim();
+                                            String cff = MainFrame.this.cFechaFinal.getText().trim();
                                   
-                                  int diafi = Integer.parseInt(cfi.substring(0,2));
-                                  int mesfi = Integer.parseInt(cfi.substring(3,5));
-                                  int añofi = Integer.parseInt(cfi.substring(6,10));
+                                            int diafi = Integer.parseInt(cfi.substring(0,2));
+                                            int mesfi = Integer.parseInt(cfi.substring(3,5));
+                                            int añofi = Integer.parseInt(cfi.substring(6,10));
                                   
-                                  int diaff = Integer.parseInt(cff.substring(0,2));
-                                  int mesff = Integer.parseInt(cff.substring(3,5));
-                                  int añoff = Integer.parseInt(cff.substring(6,10));
+                                            int diaff = Integer.parseInt(cff.substring(0,2));
+                                            int mesff = Integer.parseInt(cff.substring(3,5));
+                                            int añoff = Integer.parseInt(cff.substring(6,10));
                                     
-                                  System.out.println(diafi + " - " + mesfi + " - " + añofi);
-                                  DateTime fechaInicial = new DateTime(añofi,mesfi,diafi,0,0);
-                                  DateTime fechaFinal = new DateTime(añoff,mesff,diaff,0,0);
+                                            System.out.println(diafi + " - " + mesfi + " - " + añofi);
+                                            DateTime fechaInicial = new DateTime(añofi,mesfi,diafi,0,0);
+                                            DateTime fechaFinal = new DateTime(añoff,mesff,diaff,0,0);
                                   
-                                  SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy", new Locale("es","MX"));
-                                  SimpleDateFormat sdfHoras = new SimpleDateFormat("HH:mm:ss", new Locale("es","MX"));
+                                            SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy", new Locale("es","MX"));
+                                            SimpleDateFormat sdfHoras = new SimpleDateFormat("HH:mm:ss", new Locale("es","MX"));
                                   
-                                  Object[] renglon = new Object[5];
-                                  Object idTemp = null;
-                                  int diaTemp = -1;
-                                  int i = 1;
+                                            Object[] renglon = new Object[6];                                  
+                                            int k = 0 ,h = 0, j = 0,l = 0;                                  
+                                            int diaTemp = -1;   
                                   
-                                  for( Object id : keysFechas ){
-                                                                               
-                                       ArrayList<Object> fechas = mapaFechas.get(id);
+                                            boolean[] existeDato = {false,false,false,false};
+                                  
+                                            for( Object id : keysFechas ){
+                                                                                 
+                                                 ArrayList<Object> fechas = mapaFechas.get((Integer)id);
                                                                                                                      
-                                       for( Object fecha : fechas ){
-                                           
-                                            if( fecha != null ){
+                                                 for( Object fecha : fechas ){
+                                                                                                                                                                   
+                                                      Date date = (Date)fecha;
+                                                      DateTime Fecha = new DateTime(date);                                                
                                                 
-                                                Date date = (Date)fecha;
-                                                DateTime Fecha = new DateTime(date);                                                
-                                                
-                                                if( Fecha.toDate().after(fechaInicial.toDate()) && Fecha.toDate().before(fechaFinal.plusDays(1).toDate()) ){                                                                                                        
+                                                      if( Fecha.toDate().after(fechaInicial.toDate()) && Fecha.toDate().before(fechaFinal.plusDays(1).toDate()) ){                                                                                                        
                                                     
-                                                    String nombre = mapaNombres.get(id);
-                                                    String fff = sdfFecha.format(date);
-                                                    String ff = sdfHoras.format(date);
-                                                    System.out.println( id + " " + nombre + " " + fecha ); 
+                                                          String nombre = mapaNombres.get((Integer)id);
+                                                          String fff = sdfFecha.format(date);
+                                                          String ff = sdfHoras.format(date);
+                                                                                                                                                        
+                                                          int diaF = Fecha.getDayOfMonth();                                                                                                                                                            
+                                                          int horF = Fecha.getHourOfDay();                                                                                                        
+                                                          int minF = Fecha.getMinuteOfHour();                                                                                                                                                                                                                                                                      
                                                     
-                                                    int diaFi = fechaInicial.getDayOfMonth();
-                                                    int diaF = Fecha.getDayOfMonth();                                                    
+                                                          System.out.println(nombre + " - " + horF + " " + minF + " " + fecha);   
+                                                          
+                                                          renglon[0]= nombre;                                                                                                
+                                                          renglon[1] = fff;
+                                                          
+                                                          if( diaTemp != diaF ){
+                                                              
+                                                              if( k < 1 ){
+                                                                  renglon[2] = null;           
+                                                                  k = 0;
+                                                              }
+                                                              if( h < 1 ){
+                                                                  renglon[3] = null;           
+                                                                  h = 0;
+                                                              }
+                                                              if( j < 1 ){
+                                                                  renglon[4] = null;           
+                                                                  j = 0;
+                                                              }
+                                                              if( l < 1 ){
+                                                                  renglon[5] = null;           
+                                                                  l = 0;
+                                                              }
                                                     
-                                                    renglon[0] = nombre;
-                                                    renglon[1] = fff;
-                                                    renglon[i] = ff;
-                                                    i++;
+                                                              MainFrame.this.modelo.addRow(renglon);
+                                                              renglon = new Object[6];                                                                                                                                             
+                                                              diaTemp = diaF;                                                                                                           
+                                                     
+                                                          }                                                                                                                                                                                                                                                                                                                                                                           
                                                     
-                                                    if( i == 5 ){
-                                                        i = 0;
-                                                        MainFrame.this.modelo.addRow(renglon);
-                                                    }
+                                                          if( horF >= 7 && horF <= 9 ){
+                                                              renglon[2] = ff;       
+                                                              k++;
+                                                              existeDato[0] = true;
+                                                          }                                                                                                     
                                                     
+                                                          if( horF >= 12 && horF <= 14 ){
+                                                              renglon[3] = ff;       
+                                                              h++;
+                                                              existeDato[1] = true; 
+                                                          }                                                                                                        
                                                     
-                                                }                                                
-                                                
+                                                          if( horF >= 15 && horF <= 17 ){
+                                                              renglon[4] = ff;       
+                                                              j++;
+                                                              existeDato[2] = true;
+                                                          }
+                                                                                                                                                                
+                                                          if( horF >= 17 && minF >= 30 ){
+                                                              renglon[5] = ff;       
+                                                              l++;
+                                                              existeDato[3] = true;       
+                                                          }
+                                                                                                                                                                                                                                                                                                                                                 
+                                                      }                                                                                          
+                                       
+                                                 }                                                                                                                                                                                                                                                                                                                                         
+                                                                    
                                             }
+                                  
+                                            return null;
                                             
-                                       }
-                                      
                                   }
                                   
+                          };
+                      
+                          worker.execute();
                                   
-                                  
-                           }
-              });
+                    }
+              
+                 }
+                 
+              );
               
               bGenerarReporte = new JButton("Generar Reporte");
               bGenerarReporte.addActionListener(new ActionListener() {
